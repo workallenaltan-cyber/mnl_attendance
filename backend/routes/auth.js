@@ -103,12 +103,6 @@ router.post("/login", async (req, res) => {
 
 
     const user = result.rows[0];
-	
-	const apassword = "ah123";
-const hashed = await bcrypt.hash(apassword, 10);
-
-console.log("PASSWORD:", apassword);
-console.log("HASH:", hashed);
 
     // =====================
     // ❌ 密码验证
