@@ -95,7 +95,7 @@ router.post("/login", async (req, res) => {
        WHERE u.employee_id = $1`,
       [employeeId]
     );
-
+	message: employeeId
     if (result.rows.length === 0) {
       return res.status(401).json({
         status: "fail",
