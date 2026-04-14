@@ -165,7 +165,7 @@ router.post("/check", verify, async (req, res) => {
 		matchedCompany = c;
 	  }
 	}
-	const nearCompany = nearest.company_name;
+	const nearCompany = matchedCompany.company_name;
 	// =============================
 	// ❌ 不在任何分行范围
 	// =============================
