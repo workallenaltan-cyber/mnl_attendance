@@ -101,13 +101,15 @@ router.post("/login", async (req, res) => {
       });
     }
 
+	
     const user = result.rows[0];
 
     // =====================
     // ❌ 密码验证
     // =====================
     const valid = await bcrypt.compare(password, user.password);
-
+	console.log("INPUT:", password);
+    console.log("DB:", user.password);
     if (!valid) {
       return res.status(401).json({
         status: "fail",
