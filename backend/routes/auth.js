@@ -90,12 +90,10 @@ router.post("/login", async (req, res) => {
     const result = await pool.query(
       `SELECT u.employee_id, u.employee_name, u.password, c.company_name, u.role
        FROM public.users u
-       INNER JOIN public.company c 
-       ON u.company_code = c.company_code
        WHERE u.employee_id = $1`,
       [employeeId]
     );
-	message: employeeId
+
     if (result.rows.length === 0) {
       return res.status(401).json({
         status: "fail",
