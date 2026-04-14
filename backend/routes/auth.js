@@ -107,6 +107,11 @@ router.post("/login", async (req, res) => {
 console.log("DB URL:", process.env.DATABASE_URL);
 console.log("LOGIN ID:", employeeId);
 console.log("DB RESULT:", result.rows);
+const test = await bcrypt.compare(password, user.password);
+
+console.log("INPUT:", password);
+console.log("HASH:", user.password);
+console.log("COMPARE:", test);
 
     // =====================
     // ❌ 密码验证
