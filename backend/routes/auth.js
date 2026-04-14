@@ -105,7 +105,7 @@ router.post("/login", async (req, res) => {
     const user = result.rows[0];
 	
 // ✅ 测试 hash 是否正确
-const test = await bcrypt.compare("admin123", user.password);
+const test = await bcrypt.compare("ah123", user.password);
 console.log("TEST bcrypt:", test);
 
     // =====================
