@@ -66,26 +66,7 @@ router.post("/login", async (req, res) => {
 
     employeeId = employeeId.trim().toUpperCase();
 
-    // =====================
-    // ❌ GPS检查
-    // =====================
-    if (user.role !== "admin") {
-		if (!lat || !lng) {
-		  return res.status(400).json({
-			status: "fail",
-			message: "必须开启GPS"
-		  });
-		}
-	}
-
-    // （可选）GPS 精度检测
-    if (accuracy && accuracy > 100) {
-      return res.status(400).json({
-        status: "fail",
-        message: "GPS不准确，请到户外重试"
-      });
-    }
-
+   
     // =====================
     // ✅ 查询用户
     // =====================
@@ -155,6 +136,26 @@ router.post("/login", async (req, res) => {
 		}
 	  });
 	}
+
+     // =====================
+    // ❌ GPS检查
+    // =====================
+    if (user.role !== "admin") {
+		if (!lat || !lng) {
+		  return res.status(400).json({
+			status: "fail",
+			message: "必须开启GPS"
+		  });
+		}
+	}
+
+    // （可选）GPS 精度检测
+    if (accuracy && accuracy > 100) {
+      return res.status(400).json({
+        status: "fail",
+        message: "GPS不准确，请到户外重试"
+      });
+    }
 
     // =====================
     // ✅ 查询所有分行
