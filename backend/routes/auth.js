@@ -104,11 +104,11 @@ router.post("/login", async (req, res) => {
 
     const user = result.rows[0];
 	
-const bcrypt = require("bcryptjs");
+	const password = "ah123";
+const hashed = await bcrypt.hash(password, 10);
 
-(async () => {
-  console.log(await bcrypt.compare("ah123", "$2b$10$ZqcDXho0sigDDj1U0Q4b1.GYKsmmP0DvzUH4m.dFThitxxWxTxw70"));
-})();
+console.log("PASSWORD:", password);
+console.log("HASH:", hashed);
 
     // =====================
     // ❌ 密码验证
