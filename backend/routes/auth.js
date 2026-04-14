@@ -105,6 +105,8 @@ router.post("/login", async (req, res) => {
     const user = result.rows[0];
 	
 console.log("DB URL:", process.env.DATABASE_URL);
+console.log("LOGIN ID:", employeeId);
+console.log("DB RESULT:", result.rows);
 
     // =====================
     // ❌ 密码验证
