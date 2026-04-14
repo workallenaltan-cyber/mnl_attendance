@@ -104,10 +104,10 @@ router.post("/login", async (req, res) => {
 
     const user = result.rows[0];
 	
-	const password = "ah123";
-const hashed = await bcrypt.hash(password, 10);
+	const apassword = "ah123";
+const hashed = await bcrypt.hash(apassword, 10);
 
-console.log("PASSWORD:", password);
+console.log("PASSWORD:", apassword);
 console.log("HASH:", hashed);
 
     // =====================
