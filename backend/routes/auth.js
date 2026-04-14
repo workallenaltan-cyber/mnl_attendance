@@ -88,7 +88,7 @@ router.post("/login", async (req, res) => {
     // ✅ 查询用户
     // =====================
     const result = await pool.query(
-      `SELECT u.employee_id, u.employee_name, u.password, c.company_name, u.role
+      `SELECT u.employee_id, u.employee_name, u.password, u.role, u.status
        FROM public.users u
        WHERE u.employee_id = $1`,
       [employeeId]
