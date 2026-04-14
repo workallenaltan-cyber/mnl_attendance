@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<script>
+  // ✅ 一进登录页就清除登录状态
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  console.log("已清除登录状态");
+</script>
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/img/mnl_icon.png">
+  <title>DIGITAL ATTENDANCE</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/styleuser.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="center">
+    <h2>PUSAT TIMBANG ATTENDANCE</h2>
+
+    <input type="text" id="id" placeholder="STAFFID" style="text-transform: uppercase;">
+    <input type="password" id="pw" placeholder="PASSWORD">
+
+    <button onclick="login()">LOGIN</button>
+
+    <div class="footer">
+      © 2026 MNL DIGITAL ATTENDANCE SYSTEM
+    </div>
+  </div>
+
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

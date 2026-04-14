@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Staff Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body onload="initPage()">
+
+<!-- ================= Sidebar ================= -->
+<div id="sidebar-container"></div>
+
+<!-- ================= Main ================= -->
+<div id="main" class="main">
+  <!-- 顶部 -->
+  <div class="topbar">
+
+    <div class="top-actions">
+	  <h2 style="text-align: left;">Staff Management</h2>
+	  <button class="btn" onclick="openAddDialog()">+ Add Staff</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <table id="dataaTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>NAME</th>
+          <th>ROLE</th>
+          <th>COMPANY CODE</th>
+		  <th>COMPANY NAME</th>
+		  <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody id="staffTable">
+		 <tr><td colspan="11">加载中...</td></tr>
+	  </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ================= Modal (Add/Edit) ================= -->
+<div id="staffModal" class="modal">
+  <div class="modal-content">
+
+    <h3 id="modalTitle">Add Staff</h3>
+
+    <input id="modalName" placeholder="Name">
+    <input id="modalEmail" placeholder="Email">
+    <input id="modalPassword" type="password" placeholder="Password">
+
+    <div class="modal-actions">
+      <button onclick="saveStaff()">Save</button>
+      <button onclick="closeModal()">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= Modal (Change Password) ================= -->
+<div id="passwordModal" class="modal">
+  <div class="modal-content">
+
+    <h3>Change Password</h3>
+
+    <input id="newPassword" type="password" placeholder="New Password">
+
+    <div class="modal-actions">
+      <button onclick="submitPassword()">Update</button>
+      <button onclick="closePasswordModal()">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+/* =========================
+   🌐 全局
+========================= */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   📦 容器
+========================= */
+.container {
+  display: flex;
+  width: 900px;
+  max-width: 95%;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* =========================
+   左侧
+========================= */
+
+
+/* =========================
+   右侧
+========================= */
+.center {
+  flex: 1;
+  padding: 40px;
+}
+
+/* =========================
+   输入框
+========================= */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+/* =========================
+   按钮
+========================= */
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #667eea;
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #5a67d8;
+}
+
+/* =========================
+   页脚
+========================= */
+.footer {
+  margin-top: 15px;
+  font-size: 12px;
+  text-align: center;
+  color: #888;
+}
+
+/* =========================
+   📱 手机优化
+========================= */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .left {
+    display: none;
+  }
+}

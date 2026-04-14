@@ -1,0 +1,124 @@
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+  <link rel="icon" href="/img/mnl_icon.png">
+  <title>DIGITAL ATTENDANCE</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body onload="initPage()">
+<div id="sidebar-container"></div>
+
+	<!-- Toggle Button -->
+
+<!-- 主内容 -->
+<div id="main" class="main">
+
+  <!-- 顶部 -->
+  <div class="topbar">
+
+    <div class="top-actions">
+
+	  <input type="text" id="monthFilter" class="input-month" placeholder="选择月份">
+      <input type="text" id="searchInput" placeholder="搜索员工..." onkeyup="filterTable()">
+      <button class="btn" onclick="exportExcel()">导出 Excel</button>
+    </div>
+  </div>
+
+  <!-- 标题 -->
+  <h2>打卡记录（管理员）</h2>
+
+  <!-- 表格卡片 -->
+  <div class="card">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>员工ID</th>
+          <th>员工</th>
+          <th>公司</th>
+          <th>日期</th>
+          <th>上班</th>
+          <th>下班</th>
+          <th>上班地点</th>
+          <th>下班地点</th>
+          <th>上班IP</th>
+          <th>下班IP</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="11">加载中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+
+<script>
+// =====================
+// ✅ Sidebar 切换
+// =====================
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("main");
+  const btn = document.querySelector(".toggle-btn");
+
+  sidebar.classList.toggle("collapsed");
+  main.classList.toggle("collapsed");
+
+  btn.innerHTML = sidebar.classList.contains("collapsed") ? "➡" : "☰";
+}
+
+
+// =====================
+// ✅ 搜索过滤
+// =====================
+function filterTable() {
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  const rows = document.querySelectorAll("#tableBody tr");
+
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(input) ? "" : "none";
+  });
+}
+
+// =====================
+// ✅ 退出
+// =====================
+function logout() {
+  localStorage.clear();
+  location.href = "index.html";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const fp = flatpickr("#monthFilter", {
+    dateFormat: "Y-m",
+    plugins: [
+      new monthSelectPlugin({
+        shorthand: true,
+        dateFormat: "Y-m",
+        altFormat: "F Y"
+      })
+    ],
+    defaultDate: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    onChange: function(selectedDates, dateStr) {
+      loadAll(); // 自动刷新
+    }
+  });
+
+  window.fp = fp; // 给其他地方用
+
+});
+</script>
+
+</body>
+</html>
