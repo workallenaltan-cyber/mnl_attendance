@@ -182,7 +182,7 @@ router.post("/check", verify, async (req, res) => {
       await pool.query(
         `INSERT INTO attendance 
         (employee_id, date, check_in_time, check_in_lat, check_in_lng, check_in_ip,check_area)
-        VALUES ($1,$2,$3,$4,$5,$6)`,
+        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
         [employeeId, today, now, lat, lng, ip,nearCompany]
       );
 
