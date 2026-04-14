@@ -108,8 +108,6 @@ router.post("/login", async (req, res) => {
 const test = await bcrypt.compare("admin123", user.password);
 console.log("TEST bcrypt:", test);
 
-// 原本逻辑
-const valid = await bcrypt.compare(password, user.password);
     // =====================
     // ❌ 密码验证
     // =====================
