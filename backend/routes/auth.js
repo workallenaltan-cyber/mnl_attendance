@@ -69,12 +69,14 @@ router.post("/login", async (req, res) => {
     // =====================
     // ❌ GPS检查
     // =====================
-    if (!lat || !lng) {
-      return res.status(400).json({
-        status: "fail",
-        message: "必须开启GPS"
-      });
-    }
+    if (user.role !== "admin") {
+		if (!lat || !lng) {
+		  return res.status(400).json({
+			status: "fail",
+			message: "必须开启GPS"
+		  });
+		}
+	}
 
     // （可选）GPS 精度检测
     if (accuracy && accuracy > 100) {
@@ -115,6 +117,44 @@ router.post("/login", async (req, res) => {
         message: "密码错误"
       });
     }
+	
+	// =====================
+	// 👑 ADMIN 直接登录（跳过GPS🔥）
+	// =====================
+	if (user.role === "admin") {
+
+	  if (!process.env.JWT_SECRET) {
+		return res.status(500).json({
+		  status: "error",
+		  message: "服务器配置错误"
+		});
+	  }
+
+	  const token = jwt.sign(
+		{
+		  id: user.employee_id,
+		  name: user.employee_name,
+		  role: user.role,
+		  company: "ADMIN"
+		},
+		process.env.JWT_SECRET,
+		{ expiresIn: "8h" }
+	  );
+
+	  console.log("👑 管理员登录:", user.employee_id);
+
+	  return res.json({
+		status: "success",
+		message: "管理员登录成功",
+		token,
+		company: "ADMIN",
+		user: {
+		  employeeId: user.employee_id,
+		  name: user.employee_name,
+		  role: user.role
+		}
+	  });
+	}
 
     // =====================
     // ✅ 查询所有分行
