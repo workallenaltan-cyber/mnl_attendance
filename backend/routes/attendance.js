@@ -165,7 +165,7 @@ router.post("/check", verify, async (req, res) => {
 		matchedCompany = c;
 	  }
 	}
-
+	const nearCompany = nearest.company_name;
 	// =============================
 	// ❌ 不在任何分行范围
 	// =============================
@@ -181,9 +181,9 @@ router.post("/check", verify, async (req, res) => {
     if (result.rows.length === 0) {
       await pool.query(
         `INSERT INTO attendance 
-        (employee_id, date, check_in_time, check_in_lat, check_in_lng, check_in_ip)
+        (employee_id, date, check_in_time, check_in_lat, check_in_lng, check_in_ip,check_area)
         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [employeeId, today, now, lat, lng, ip]
+        [employeeId, today, now, lat, lng, ip,nearCompany]
       );
 
       return res.json({
