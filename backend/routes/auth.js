@@ -104,10 +104,12 @@ router.post("/login", async (req, res) => {
 
     const user = result.rows[0];
 	
-	// 👇 加这里（关键）
-	console.log("INPUT:", password);
-	console.log("DB:", user.password);
+// ✅ 测试 hash 是否正确
+const test = await bcrypt.compare("admin123", user.password);
+console.log("TEST bcrypt:", test);
 
+// 原本逻辑
+const valid = await bcrypt.compare(password, user.password);
     // =====================
     // ❌ 密码验证
     // =====================

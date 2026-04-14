@@ -25,13 +25,6 @@ app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
 
-const bcrypt = require("bcryptjs");
-
-console.log(
-  "TEST:",
-  await bcrypt.compare("admin123", "$2b$10$F1FoQpjwn8Hk4Ks5SXGYK.Ag1.lVxmF23g/M8Cs.Io11XdaKfNFmy")
-);
-
 /*const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
