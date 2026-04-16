@@ -390,18 +390,19 @@ function loadTodayRecord() {
 
 /*======================================Admin Control=====================================*/
 function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("collapsed");
-  document.getElementById("main").classList.toggle("collapsed");
-  
-  const sidebar = document.querySelector(".sidebar");
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("main");
+  const btn = document.querySelector(".toggle-btn");
 
   if (window.innerWidth <= 768) {
-    // 📱 手机：滑出
+    // 📱 手机模式 → 滑出 sidebar
     sidebar.classList.toggle("show");
   } else {
-    // 💻 桌面：收起
+    // 💻 桌面模式 → collapse
     sidebar.classList.toggle("collapsed");
-    document.getElementById("main").classList.toggle("collapsed");
+    main.classList.toggle("collapsed");
+
+    btn.innerHTML = sidebar.classList.contains("collapsed") ? "➡" : "☰";
   }
 }
 
@@ -720,6 +721,20 @@ document.addEventListener("DOMContentLoaded", () => {
     loadTodayRecord();
   }
 
+});
+
+document.addEventListener("click", function(e) {
+  const sidebar = document.getElementById("sidebar");
+  const btn = document.querySelector(".menu-btn");
+
+  if (
+    window.innerWidth <= 768 &&
+    sidebar &&
+    !sidebar.contains(e.target) &&
+    !btn.contains(e.target)
+  ) {
+    sidebar.classList.remove("show");
+  }
 });
 
 // =====================
