@@ -264,3 +264,67 @@ tr:hover {
   margin-top: 10px;
   text-align: right;
 }
+
+/* =========================
+   📱 MOBILE 优化
+========================= */
+@media (max-width: 768px) {
+
+  /* ===== Sidebar 默认隐藏 ===== */
+  .sidebar {
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 0;
+    transform: translateX(-100%);
+    z-index: 1000;
+  }
+
+  /* 打开 sidebar */
+  .sidebar.show {
+    transform: translateX(0);
+  }
+
+  /* 取消 collapsed 在手机的逻辑 */
+  .sidebar.collapsed {
+    width: 220px;
+  }
+
+  /* ===== 主内容全屏 ===== */
+  #main {
+    margin-left: 0 !important;
+    padding: 15px;
+  }
+
+  #main.collapsed {
+    margin-left: 0;
+  }
+
+  /* ===== 顶部按钮（☰）固定 ===== */
+  .menu-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+  }
+
+  /* ===== 卡片占满 ===== */
+  .card {
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  /* ===== 表格横向滑动 ===== */
+  .card {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 700px;
+  }
+
+  /* ===== 搜索栏缩小 ===== */
+  .top-actions input {
+    width: 120px;
+  }
+}

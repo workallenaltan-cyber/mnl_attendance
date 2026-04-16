@@ -392,6 +392,17 @@ function loadTodayRecord() {
 function toggleSidebar() {
   document.getElementById("sidebar").classList.toggle("collapsed");
   document.getElementById("main").classList.toggle("collapsed");
+  
+  const sidebar = document.querySelector(".sidebar");
+
+  if (window.innerWidth <= 768) {
+    // 📱 手机：滑出
+    sidebar.classList.toggle("show");
+  } else {
+    // 💻 桌面：收起
+    sidebar.classList.toggle("collapsed");
+    document.getElementById("main").classList.toggle("collapsed");
+  }
 }
 
 function loadSidebarAuto() {
