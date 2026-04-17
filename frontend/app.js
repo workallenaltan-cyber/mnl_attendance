@@ -392,17 +392,14 @@ function loadTodayRecord() {
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
   const main = document.getElementById("main");
-  const btn = document.querySelector(".toggle-btn");
 
   if (window.innerWidth <= 768) {
-    // 📱 手机模式 → 滑出 sidebar
+    // 📱 手机 → 滑出
     sidebar.classList.toggle("show");
   } else {
-    // 💻 桌面模式 → collapse
+    // 💻 桌面 → 收起
     sidebar.classList.toggle("collapsed");
     main.classList.toggle("collapsed");
-
-    btn.innerHTML = sidebar.classList.contains("collapsed") ? "➡" : "☰";
   }
 }
 
@@ -469,9 +466,7 @@ function loadStaff() {
     console.log("DATA:", data);
 
     const table = document.getElementById("staffTable");
-    table.innerHTML = "";
 
-    data.forEach(user => {
 		
 		let html = "";
 
@@ -493,7 +488,6 @@ function loadStaff() {
 
 		table.innerHTML = html;
 
-    });
 
   })
   .catch(err => {
@@ -722,7 +716,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
-
 document.addEventListener("click", function(e) {
   const sidebar = document.getElementById("sidebar");
   const btn = document.querySelector(".menu-btn");
@@ -736,7 +729,6 @@ document.addEventListener("click", function(e) {
     sidebar.classList.remove("show");
   }
 });
-
 // =====================
 // ✅ 用户操作监听（🔥放这里）
 // =====================

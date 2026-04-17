@@ -15,6 +15,7 @@
 <div id="sidebar" class="sidebar">
 
 	<!-- Toggle Button -->
+	<button class="menu-btn" onclick="toggleSidebar()">☰</button>
 
 <!-- 主内容 -->
 <div id="main" class="main">
@@ -62,19 +63,6 @@
 <script src="app.js"></script>
 
 <script>
-// =====================
-// ✅ Sidebar 切换
-// =====================
-function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  const main = document.getElementById("main");
-  const btn = document.querySelector(".toggle-btn");
-
-  sidebar.classList.toggle("collapsed");
-  main.classList.toggle("collapsed");
-
-  btn.innerHTML = sidebar.classList.contains("collapsed") ? "➡" : "☰";
-}
 
 
 // =====================
