@@ -279,16 +279,33 @@ tr:hover {
     transform: translateX(-100%);
     z-index: 1000;
   }
+  .sidebar {
+    box-shadow: 0 0 30px rgba(0,0,0,0.2);
+  }
 
   /* 打开 sidebar */
   .sidebar.show {
     transform: translateX(0);
   }
 
-  /* 取消 collapsed 在手机的逻辑 */
+  @media (max-width: 768px) {
+
+  /* ❌ 禁用 collapsed 所有副作用 */
   .sidebar.collapsed {
-    width: 220px;
+    width: 220px !important;
   }
+
+  .sidebar.collapsed .logo {
+    display: block !important;
+  }
+
+  .sidebar.collapsed .menu span {
+    display: inline !important;
+  }
+}
+.menu span {
+  white-space: nowrap;
+}
 
   /* ===== 主内容全屏 ===== */
   #main {
