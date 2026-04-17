@@ -390,17 +390,8 @@ function loadTodayRecord() {
 
 /*======================================Admin Control=====================================*/
 function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  const main = document.getElementById("main");
-
-  if (window.innerWidth <= 768) {
-    // 📱 手机 → 滑出
-    sidebar.classList.toggle("show");
-  } else {
-    // 💻 桌面 → 收起
-    sidebar.classList.toggle("collapsed");
-    main.classList.toggle("collapsed");
-  }
+  document.getElementById("sidebar").classList.toggle("collapsed");
+  document.getElementById("main").classList.toggle("collapsed");
 }
 
 function loadSidebarAuto() {
@@ -466,7 +457,9 @@ function loadStaff() {
     console.log("DATA:", data);
 
     const table = document.getElementById("staffTable");
+    table.innerHTML = "";
 
+    data.forEach(user => {
 		
 		let html = "";
 
@@ -488,6 +481,7 @@ function loadStaff() {
 
 		table.innerHTML = html;
 
+    });
 
   })
   .catch(err => {
@@ -716,19 +710,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
-document.addEventListener("click", function(e) {
-  const sidebar = document.getElementById("sidebar");
-  const btn = document.querySelector(".menu-btn");
 
-  if (
-    window.innerWidth <= 768 &&
-    sidebar &&
-    !sidebar.contains(e.target) &&
-    !btn.contains(e.target)
-  ) {
-    sidebar.classList.remove("show");
-  }
-});
 // =====================
 // ✅ 用户操作监听（🔥放这里）
 // =====================
