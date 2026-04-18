@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
   <link rel="icon" href="/img/mnl_icon.png">
   <title>DIGITAL ATTENDANCE</title>
-  <link rel="stylesheet" href="/css/style.css?v=2">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body onload="initPage()">
@@ -16,7 +16,10 @@
 
 	<!-- Toggle Button -->
 	<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
 </div>
+	<!-- Toggle Button -->
+
 <!-- 主内容 -->
 <div id="main" class="main">
 
@@ -60,9 +63,22 @@
 
 </div>
 
-<script src="app.js?v=2"></script>
+<script src="app.js"></script>
 
 <script>
+// =====================
+// ✅ Sidebar 切换
+// =====================
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("main");
+  const btn = document.querySelector(".toggle-btn");
+
+  sidebar.classList.toggle("collapsed");
+  main.classList.toggle("collapsed");
+
+  btn.innerHTML = sidebar.classList.contains("collapsed") ? "➡" : "☰";
+}
 
 
 // =====================
