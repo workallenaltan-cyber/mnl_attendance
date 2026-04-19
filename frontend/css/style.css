@@ -41,6 +41,13 @@ body {
   color: white;
 }
 
+.logo img {
+  width: 50px;     /* 控制大小 */
+  height: auto;     /* 保持比例 */
+  display: block;
+  margin: 0 auto;   /* 居中 */
+}
+
 /* ✅ 按钮固定在右上角（在蓝框内） */
 .menu-btn {
   position: absolute;   /* ✅ 关键 */
