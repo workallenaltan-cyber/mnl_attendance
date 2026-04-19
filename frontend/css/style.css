@@ -63,7 +63,10 @@ body {
   background: rgba(255,255,255,0.3);
 }
 
-
+.sidebar-header {
+  position: relative;
+  height: 80px;   /* ✅ 固定高度 */
+}
 /* LOGO */
 .sidebar .logo {
   color: white;
@@ -76,11 +79,10 @@ body {
 .sidebar.collapsed .logo {
   display: none;
 }
-
-.sidebar.collapsed .menu-btn {
-  right: 50%;
-  transform: translateX(50%);
+.sidebar.collapsed .sidebar-header {
+  height: 80px; /* ✅ 一样高度，不变 */
 }
+
 
 /* 菜单 */
 .menu {
