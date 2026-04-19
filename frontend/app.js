@@ -420,7 +420,6 @@ function loadSidebarAuto() {
 
 function initPage() {
   loadSidebarAuto(); // 👈 高亮当前页面
-
 }
 
 function openAddDialog() {
