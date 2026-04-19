@@ -389,11 +389,18 @@ function loadTodayRecord() {
 }
 
 /*======================================Admin Control=====================================*/
+// =====================
+// ✅ Sidebar 切换
+// =====================
 function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("collapsed");
-  document.getElementById("main").classList.toggle("collapsed");
-  
-  
+  const sidebar_box = document.getElementById("sidebar_box");
+  const main = document.getElementById("main");
+  const btn = document.querySelector(".toggle-btn");
+
+  sidebar_box.classList.toggle("collapsed");
+  main.classList.toggle("collapsed");
+
+  btn.innerHTML = sidebar_box.classList.contains("collapsed") ? "➡" : "☰";
 }
 
 function loadSidebarAuto() {
