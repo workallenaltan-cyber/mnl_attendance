@@ -42,8 +42,8 @@ body {
 
 /* ✅ 按钮固定在右上角（在蓝框内） */
 .menu-btn {
-  position: absolute;
-  right: 15px;
+  position: fixed;
+  left: 15px;
   top: 15px;
 
   background: rgba(255,255,255,0.2);
