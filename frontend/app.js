@@ -400,7 +400,7 @@ function loadSidebarAuto() {
   fetch("/components/admin_sidebar.html")
     .then(res => res.text())
     .then(html => {
-      document.getElementById("sidebar").innerHTML = html;
+      document.getElementById("sidebar_box").innerHTML = html;
 
       // ✅ 当前页面
       const currentPage = window.location.pathname.split("/").pop();
