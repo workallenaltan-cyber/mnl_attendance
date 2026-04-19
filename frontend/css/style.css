@@ -99,6 +99,14 @@ body {
 }
 
 /* 收起隐藏文字 */
+.sidebar.collapsed .menu {
+  justify-content: center;
+  padding: 10px;
+  width: fit-content;
+  margin: 8px auto;
+  font-size: 20px;
+}
+
 .sidebar.collapsed .menu span {
   display: none;
 }
