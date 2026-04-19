@@ -288,3 +288,27 @@ tr:hover {
   margin-top: 10px;
   text-align: right;
 }
+
+@media (max-width: 768px) {
+  table, thead, tbody, tr, td, th {
+    display: block;
+  }
+
+  tr {
+    margin-bottom: 12px;
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: bold;
+  }
+}
