@@ -1,21 +1,23 @@
+<div class="sidebar" id="sidebar_box">
 
- <div class="sidebar-header">
+  <div class="sidebar-header">
     <div class="logo">
       <img src="/img/mnl_icon.png">
     </div>
 
-    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
   </div>
-	
-								 
-  <a href="admin.html" class="menu">
-    📊 <span>DASHBOARD</span>
+
+  <a href="admin.html" class="menu active" data-label="Dashboard">
+    📊 <span>Dashboard</span>
   </a>
 
-  <a href="mgt_staff.html" class="menu">
-    👥 <span>STAFF</span>
+  <a href="mgt_staff.html" class="menu" data-label="Staff">
+    👥 <span>Staff</span>
   </a>
 
-  <a href="mgt_company.html" class="menu">
-    🏢 <span>COMPANY</span>
+  <a href="mgt_company.html" class="menu" data-label="Company">
+    🏢 <span>Company</span>
   </a>
+
+</div>

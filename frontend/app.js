@@ -393,17 +393,52 @@ function loadTodayRecord() {
 // ✅ Sidebar 切换
 // =====================
 function toggleSidebar() {
-  const sidebar_box = document.getElementById("sidebar_box");
+  const sidebar = document.getElementById("sidebar_box");
   const main = document.getElementById("main");
-  const btn = document.querySelector(".toggle-btn");
 
-  sidebar_box.classList.toggle("collapsed");
-  main.classList.toggle("collapsed");
+  if (window.innerWidth <= 768) {
+    sidebar.classList.toggle("active");
+  } else {
+    sidebar.classList.toggle("collapsed");
+	 main.classList.toggle("collapsed");
+  }
+   // 🔥 保存状态
+  localStorage.setItem(
+    "sidebarState",
+    sidebar.classList.contains("collapsed") ? "collapsed" : "open"
+  );
 
-  btn.innerHTML = sidebar_box.classList.contains("collapsed") ? "➡" : "☰";
+  updateToggleBtn();
 }
 
-function loadSidebarAuto() {
+function updateToggleBtn() {
+  const sidebar = document.getElementById("sidebar_box");
+  const btn = document.querySelector(".toggle-btn");
+
+  if (!btn) return;
+
+  if (window.innerWidth <= 768) {
+    btn.style.left = "15px";
+  } else {
+    btn.style.left = sidebar.classList.contains("collapsed") ? "90px" : "240px";
+  }
+}
+
+function initSidebarState() {
+  const sidebar = document.getElementById("sidebar_box");
+
+  const state = localStorage.getItem("sidebarState");
+
+  if (state === "collapsed") {
+    sidebar.classList.add("collapsed");
+  } else {
+    sidebar.classList.remove("collapsed");
+  }
+}
+//window.addEventListener("resize", autoSidebar);
+//window.addEventListener("load", autoSidebar);
+
+function initPage() {
   fetch("/components/admin_sidebar.html")
     .then(res => res.text())
     .then(html => {
@@ -423,10 +458,6 @@ function loadSidebarAuto() {
         }
       });
     });
-}
-
-function initPage() {
-  loadSidebarAuto(); // 👈 高亮当前页面
 }
 
 function openAddDialog() {
