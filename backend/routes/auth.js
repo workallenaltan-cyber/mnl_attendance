@@ -107,7 +107,7 @@ router.post("/login", async (req, res) => {
 	  if (!process.env.JWT_SECRET) {
 		return res.status(500).json({
 		  status: "error",
-		  message: "服务器配置错误"
+		  message: "服务器配置错误secret"
 		});
 	  }
 
@@ -269,7 +269,7 @@ router.post("/login", async (req, res) => {
     console.error("❌ LOGIN ERROR:", err);
     res.status(500).json({
       status: "error",
-      message: "服务器错误2"
+      message: "Server Error !! "
     });
   }
 });
