@@ -234,6 +234,19 @@ function check() {
   });
 }
 
+function logout() {
+
+  const confirmLogout = confirm("确定要退出登录吗？");
+
+  if (!confirmLogout) return;
+
+  // 清除所有本地数据
+  localStorage.clear();
+
+  // 返回登录页
+  window.location.replace("/login.html");
+}
+
 // =====================
 // ✅ 状态控制 + 自动跳转
 // =====================
