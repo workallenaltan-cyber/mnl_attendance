@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Staff Management</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
+  <link rel="icon" href="/img/mnl_icon.png">
+  <title>Staff Management</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 
@@ -16,10 +16,10 @@
 <!-- ================= Main ================= -->
 <div id="main" class="main">
   <!-- 顶部 -->
+  <h2 style="text-align: left;">Staff Management</h2>
   <div class="topbar">
 
     <div class="top-actions">
-	  <h2 style="text-align: left;">Staff Management</h2>
 	  <button class="btn" onclick="openAddDialog()">+ Add Staff</button>
     </div>
   </div>
@@ -29,8 +29,8 @@
     <table id="dataaTable">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>NAME</th>
+          <th>STAFF ID</th>
+          <th>STAFF NAME</th>
           <th>ROLE</th>
           <th>COMPANY CODE</th>
 		  <th>COMPANY NAME</th>
@@ -38,7 +38,7 @@
         </tr>
       </thead>
       <tbody id="staffTable">
-		 <tr><td colspan="11">加载中...</td></tr>
+		 <tr><td colspan="11">LOADING...</td></tr>
 	  </tbody>
     </table>
   </div>
@@ -49,15 +49,15 @@
 <div id="staffModal" class="modal">
   <div class="modal-content">
 
-    <h3 id="modalTitle">Add Staff</h3>
+    <h3 id="modalTitle">ADD STAFF</h3>
 
     <input id="modalName" placeholder="Name">
     <input id="modalEmail" placeholder="Email">
     <input id="modalPassword" type="password" placeholder="Password">
 
     <div class="modal-actions">
-      <button onclick="saveStaff()">Save</button>
-      <button onclick="closeModal()">Cancel</button>
+      <button onclick="saveStaff()">SAVE</button>
+      <button onclick="closeModal()">CANCEL</button>
     </div>
 
   </div>
