@@ -376,6 +376,34 @@ tr:hover {
     opacity: 1;
   }
 }
+
+.modal-content select {
+  width: 100%;
+
+  padding: 14px 16px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+
+  outline: none;
+
+  background: white;
+
+  transition: 0.2s;
+
+  box-sizing: border-box;
+}
+
+.modal-content select:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+}
 /* =========================
    MOBILE FIX (IMPORTANT)
 ========================= */
