@@ -244,7 +244,7 @@ function logout() {
   localStorage.clear();
 
   // 返回登录页
-  window.location.replace("/login.html");
+  window.location.replace("/index.html");
 }
 
 // =====================
