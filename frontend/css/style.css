@@ -243,6 +243,139 @@ tr:hover {
   border-radius: 10px;
 }
 
+/* ================= MODAL OVERLAY ================= */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0,0,0,0.45);
+
+  display: none;
+
+  justify-content: center;
+  align-items: center;
+
+  z-index: 999;
+}
+
+/* ================= MODAL BOX ================= */
+.modal-content {
+  width: 90%;
+  max-width: 420px;
+
+  background: #fff;
+
+  border-radius: 22px;
+
+  padding: 28px;
+
+  box-shadow: 0 10px 35px rgba(0,0,0,0.18);
+
+  animation: modalPopup 0.25s ease;
+}
+
+/* ================= TITLE ================= */
+.modal-content h3 {
+  margin-bottom: 22px;
+
+  text-align: center;
+
+  font-size: 24px;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+/* ================= INPUT ================= */
+.modal-content input {
+  width: 100%;
+
+  padding: 14px 16px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition: 0.2s;
+  box-sizing: border-box;
+}
+
+/* focus */
+.modal-content input:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+}
+
+/* ================= BUTTON AREA ================= */
+.modal-actions {
+  display: flex;
+
+  gap: 12px;
+
+  margin-top: 10px;
+}
+
+/* ================= BUTTON ================= */
+.modal-actions button {
+  flex: 1;
+
+  border: none;
+
+  padding: 13px;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+/* SAVE BUTTON */
+.modal-actions button:first-child {
+  background: #2563eb;
+  color: white;
+}
+
+.modal-actions button:first-child:hover {
+  background: #1d4ed8;
+}
+
+/* CANCEL BUTTON */
+.modal-actions button:last-child {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.modal-actions button:last-child:hover {
+  background: #d1d5db;
+}
+
+/* ================= ANIMATION ================= */
+@keyframes modalPopup {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 /* =========================
    MOBILE FIX (IMPORTANT)
 ========================= */
