@@ -452,24 +452,40 @@ function initSidebarState() {
 //window.addEventListener("load", autoSidebar);
 
 function initPage() {
+
   fetch("/components/admin_sidebar.html")
     .then(res => res.text())
     .then(html => {
+
       document.getElementById("sidebar_box").innerHTML = html;
 
-      // ✅ 当前页面
-      const currentPage = window.location.pathname.split("/").pop();
+      // 当前页面文件名
+      const currentPage =
+        window.location.pathname.split("/").pop();
 
-      // ✅ 找全部 menu
-      const links = document.querySelectorAll(".menu");
+      // 全部 menu
+      const links =
+        document.querySelectorAll(".menu");
 
       links.forEach(link => {
-        const href = link.getAttribute("href");
 
-        if (href === currentPage) {
+        // 先清除全部 active
+        link.classList.remove("active");
+
+        // link href
+        const href =
+          link.getAttribute("href");
+
+        // 只取文件名
+        const fileName =
+          href.split("/").pop();
+
+        // 匹配
+        if (fileName === currentPage) {
           link.classList.add("active");
         }
       });
+
     });
 }
 
