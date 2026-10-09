@@ -1,0 +1,376 @@
+const express = require("express");
+const router = express.Router();
+const pool = require("../db");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+
+
+// =====================
+// ✅ Token Middleware（统一🔥）
+// =====================
+const authMiddleware = async (req, res, next) => {
+  try {
+    const authHeader =
+      req.headers.authorization ||
+      req.headers.Authorization;
+
+    // =====================
+    // 未登录
+    // =====================
+    if (!authHeader) {
+      return res.status(401).json({
+        status: "fail",
+        message: "Please login"
+      });
+    }
+
+    // =====================
+    // Token 格式检查
+    // =====================
+    const parts = authHeader.split(" ");
+
+    if (
+      parts.length !== 2 ||
+      parts[0] !== "Bearer"
+    ) {
+      return res.status(401).json({
+        status: "fail",
+        message: "token format error"
+      });
+    }
+
+    const token = parts[1];
+
+    // =====================
+    // JWT 验证
+    // =====================
+    const decoded =
+      jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+
+    // =====================
+    // 检查数据库中的用户
+    // =====================
+    const result = await pool.query(
+      `
+      SELECT
+        employee_id,
+        employee_name,
+        role,
+        employee_status
+      FROM public.users
+      WHERE employee_id = $1
+      `,
+      [decoded.id]
+    );
+
+    // =====================
+    // 用户不存在
+    // =====================
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        status: "fail",
+        message: "User not found"
+      });
+    }
+
+    const user = result.rows[0];
+
+    // =====================
+    // 检查 Active / Inactive
+    // =====================
+    if (
+      String(user.employee_status).toLowerCase() !==
+      "active"
+    ) {
+      return res.status(403).json({
+        status: "fail",
+        message: "User account is inactive"
+      });
+    }
+
+    // =====================
+    // 使用数据库最新资料
+    // =====================
+    req.user = {
+      id: user.employee_id,
+      name: user.employee_name,
+      role: user.role,
+      company: decoded.company
+    };
+
+    // =====================
+    // Token + Account 都有效
+    // =====================
+    next();
+
+  } catch (err) {
+
+    console.error(
+      "❌ TOKEN ERROR:",
+      err.message
+    );
+
+    return res.status(401).json({
+      status: "fail",
+      message: "token expired"
+    });
+  }
+};
+
+
+// =====================
+// ✅ 登录 + GPS + 分行判断（终极版🔥）
+// =====================
+router.post("/login", async (req, res) => {
+  try {
+    let { employeeId, password, lat, lng, accuracy } = req.body;
+
+    // =====================
+    // ❌ 基本检查
+    // =====================
+    if (!employeeId || !password) {
+      return res.status(400).json({
+        status: "fail",
+        message: "User and Password was empty ！"
+      });
+    }
+
+    employeeId = employeeId.trim().toUpperCase();
+
+   
+    // =====================
+    // ✅ 查询用户
+    // =====================
+    const result = await pool.query(
+      `SELECT u.employee_id, u.employee_name, u.password, u.role, u.employee_status
+       FROM public.users u
+       WHERE u.employee_id = $1`,
+      [employeeId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        status: "fail",
+        message: "User not found !"
+      });
+    }
+
+
+	const user = result.rows[0];
+
+	// =====================
+	// ❌ 检查员工状态
+	// =====================
+	if (String(user.employee_status).toLowerCase() !== "active") {
+	  return res.status(403).json({
+		status: "fail",
+		message: "User has been locked !"
+	  });
+	}
+
+	// =====================
+	// ❌ 密码验证
+	// =====================
+	const valid = await bcrypt.compare(password, user.password);
+
+	if (!valid) {
+	  return res.status(401).json({
+		status: "fail",
+		message: "Wrong password !"
+	  });
+	}
+	
+	// =====================
+	// 👑 ADMIN 直接登录（跳过GPS🔥）
+	// =====================
+	if (user.role === "admin") {
+
+	  if (!process.env.JWT_SECRET) {
+		return res.status(500).json({
+		  status: "error",
+		  message: "服务器配置错误secret"
+		});
+	  }
+
+	  const token = jwt.sign(
+		{
+		  id: user.employee_id,
+		  name: user.employee_name,
+		  role: user.role,
+		  company: "ADMIN"
+		},
+		process.env.JWT_SECRET,
+		{ expiresIn: "8h" }
+	  );
+
+	  console.log("👑 管理员登录:", user.employee_id);
+
+	  return res.json({
+		status: "success",
+		message: "管理员登录成功",
+		token,
+		company: "ADMIN",
+		user: {
+		  employeeId: user.employee_id,
+		  name: user.employee_name,
+		  role: user.role
+		}
+	  });
+	}
+
+     // =====================
+    // ❌ GPS检查
+    // =====================
+    if (user.role !== "admin") {
+		if (!lat || !lng) {
+		  return res.status(400).json({
+			status: "fail",
+			message: "Please enable GPS"
+		  });
+		}
+	}
+
+    // （可选）GPS 精度检测
+    if (accuracy && accuracy > 100) {
+      return res.status(400).json({
+        status: "fail",
+        message: "GPS lack of accuracy"
+      });
+    }
+
+    // =====================
+    // ✅ 查询所有分行
+    // =====================
+    const companyResult = await pool.query("SELECT * FROM company");
+
+    if (companyResult.rows.length === 0) {
+      return res.status(500).json({
+        status: "error",
+        message: "No Branch found"
+      });
+    }
+
+    // =====================
+    // ✅ 距离计算函数
+    // =====================
+    function getDistance(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const toRad = deg => deg * Math.PI / 180;
+
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) ** 2;
+
+      return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    let matchedcompany = null;
+    let nearest = null;
+    let minDistance = Infinity;
+
+    // =====================
+    // 🔍 遍历分行
+    // =====================
+    for (let b of companyResult.rows) {
+      const dist = getDistance(lat, lng, b.lat, b.lng);
+
+      // 最近分行
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearest = b;
+      }
+
+      // 在范围内
+      if (dist <= b.radius) {
+        matchedcompany = b;
+      }
+    }
+
+    // =====================
+    // ❌ 不在任何分行范围
+    // =====================
+    if (!matchedcompany) {
+      return res.status(403).json({
+        status: "fail",
+        message: `❌ out of range，Nearest：${nearest.company_name} (${Math.round(minDistance)}m)`
+      });
+    }
+
+    // =====================
+    // ❌ JWT 检查
+    // =====================
+    if (!process.env.JWT_SECRET) {
+      console.error("❌ JWT_SECRET 未设置");
+      return res.status(500).json({
+        status: "error JWT",
+        message: "Server services error !"
+      });
+    }
+
+    // =====================
+    // ✅ 生成 Token
+    // =====================
+    const token = jwt.sign(
+      {
+        id: user.employee_id,
+        name: user.employee_name,
+        //company: user.company_name,
+        role: user.role,
+        company: matchedcompany.company_name
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "8h" }
+    );
+
+    console.log("✅ Login Successful:", user.employee_id, "@", matchedcompany.company_name);
+
+    // =====================
+    // ✅ 返回
+    // =====================
+    res.json({
+      status: "success",
+      message: "Login Successful",
+      token,
+      company: matchedcompany.company_name,
+      distance: Math.round(minDistance),
+      user: {
+        employeeId: user.employee_id,
+        name: user.employee_name,
+        //company: user.company_name,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    console.error("❌ LOGIN ERROR:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Server Error !! "
+    });
+  }
+});
+
+
+// =====================
+// ✅ 获取当前用户（用 middleware🔥）
+// =====================
+router.get("/me", authMiddleware, (req, res) => {
+  res.json({
+    status: "success",
+    user: req.user
+  });
+});
+
+
+// =====================
+// ✅ 导出
+// =====================
+module.exports = router;

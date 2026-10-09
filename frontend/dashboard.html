@@ -1,0 +1,155 @@
+<script>
+fetch("/api/status", {
+  headers: {
+    "authorization": localStorage.getItem("token")
+  }
+})
+.then(res => res.json())
+.then(status => {
+
+  if (status.status === "not_checked_in" && location.pathname.includes("checkin")) return;
+  if (status.status === "checked_in" && location.pathname.includes("checkout")) return;
+  if (status.status === "completed" && location.pathname.includes("done")) return;
+
+  // ❌ 状态不匹配 → 重定向
+  location.href = "index.html";
+});
+</script>
+
+<!DOCTYPE html>
+<html>
+ <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      display: flex;
+      width: 900px;
+      max-width: 95%;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    /* 左边 */
+    .left {
+      flex: 1;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .left h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .left p {
+      opacity: 0.8;
+    }
+
+    /* 右边 */
+    .right {
+      flex: 1;
+      padding: 40px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #667eea;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #5a67d8;
+    }
+
+    .footer {
+      margin-top: 10px;
+      font-size: 12px;
+      text-align: center;
+      color: #888;
+    }
+
+    /* 手机版 */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .left {
+        display: none;
+      }
+    }
+	
+
+
+/* 顶部区域 */
+.header {
+  position: relative;
+  padding: 20px;
+}
+
+/* 标题 */
+.header h1 {
+  margin: 0;
+}
+
+/* 👉 用户信息（右上角） */
+.user-box {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  text-align: right;
+  font-size: 14px;
+}
+
+/* 每一行分开 */
+.user-box p {
+  margin: 2px 0;
+}
+
+
+  </style>
+<body onload="loadStatus();loadUserInfo();">
+
+<h1>PUNCHCARD SYSTEM</h1><br>
+
+<div id="userInfo" class="user-box"></div>
+
+<button id="checkInBtn" onclick="check()">CHECK IN</button>
+<button id="checkOutBtn" onclick="check()" style="display:none;">CHECK OUT</button>
+
+<script src="/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,524 @@
+/* ===== 全局 ===== */
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f5f6fa;
+}
+
+/* ===== Layout ===== */
+.layout {
+  display: flex;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  position: fixed;
+  left: 10px;
+  top: 10px;
+  width: 220px;
+  height: calc(100% - 20px);
+  background: linear-gradient(180deg, #5b6cff, #7b4dff);
+  border-radius: 20px;
+  padding: 15px 10px;
+  transition: 0.3s;
+  z-index: 2000;
+  overflow: hidden;
+}
+
+/* 收起 */
+.sidebar.collapsed {
+  width: 50px;
+}
+
+/* ===== Sidebar Header ===== */
+.sidebar-header {
+  display: flex;
+  align-items: center;        /* 垂直居中 */
+  justify-content: space-between; /* 左右分开 */
+ 
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img { 
+  width: 50px;
+  height: 50px;        /* 🔥 关键：固定正方形 */
+  object-fit: cover;   /* 防止图片变形 */
+  border-radius: 12px; /* 🔥 圆角方形 */
+
+}
+
+/* ===== 菜单 ===== */
+.menu {
+  display: flex;
+  align-items: center;
+  color: white;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.menu:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.menu.active {
+  background: white;
+  color: #5b6cff;
+}
+
+/* 收起 */
+.sidebar.collapsed .menu,
+.sidebar.collapsed .toggle-btn {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+}
+
+.sidebar.collapsed .menu span {
+  display: none;
+}
+
+.sidebar.collapsed .logo {
+  display: none;
+}
+
+/* ===== 🔥 独立 Toggle 按钮（关键） ===== */
+.toggle-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 18px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* ===== Main ===== */
+#main {
+  flex: 1;
+
+  margin-left: 250px;
+  padding: 30px;
+
+  overflow-x: hidden;
+
+  transition:
+    margin-left 0.3s ease;
+}
+
+#main.collapsed {
+  margin-left: 60px;
+}
+/* ===== 顶部栏 ===== */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 15px 20px;
+  background: white;
+  border-radius: 20px;
+  margin-bottom: 15px;
+
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+.top-left {
+  display: flex;
+  align-items: center;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-actions input,
+.input-month {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  width: 180px;
+  max-width: 100%;
+}
+
+/* ===== 按钮 ===== */
+.btn {
+  background: #5a67d8;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #434190;
+}
+
+/* ===== 卡片 ===== */
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  overflow-x: auto;   /* 🔥 关键：横向滚动 */
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+/* ===== 表格（🔥 只用这一种方案） ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 900px; /* 🔥 防止压爆 */
+}
+
+thead {
+  background: #f3f4f6;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+tr {
+  border-bottom: 1px solid #eee;
+}
+
+tr:hover {
+  background: #f9fafb;
+}
+
+/* ===== 状态 ===== */
+.badge {
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.status-ok {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.status-late {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.status-pending {
+  background: #fefcbf;
+  color: #744210;
+}
+
+.late-time {
+  color: red;
+  font-weight: bold;
+}
+
+/* ===== Modal ===== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  width: 300px;
+  margin: 10% auto;
+  border-radius: 10px;
+}
+
+/* ================= MODAL OVERLAY ================= */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0,0,0,0.45);
+
+  display: none;
+
+  justify-content: center;
+  align-items: center;
+
+  z-index: 999;
+}
+
+/* ================= MODAL BOX ================= */
+.modal-content {
+  width: 90%;
+  max-width: 420px;
+
+  background: #fff;
+
+  border-radius: 22px;
+
+  padding: 28px;
+
+  box-shadow: 0 10px 35px rgba(0,0,0,0.18);
+
+  animation: modalPopup 0.25s ease;
+}
+
+/* ================= TITLE ================= */
+.modal-content h3 {
+  margin-bottom: 22px;
+
+  text-align: center;
+
+  font-size: 24px;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+/* ================= INPUT ================= */
+.modal-content input {
+  width: 100%;
+
+  padding: 14px 16px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+
+  outline: none;
+
+  transition: 0.2s;
+  box-sizing: border-box;
+}
+
+/* focus */
+.modal-content input:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+}
+
+/* ================= BUTTON AREA ================= */
+.modal-actions {
+  display: flex;
+
+  gap: 12px;
+
+  margin-top: 10px;
+}
+
+/* ================= BUTTON ================= */
+.modal-actions button {
+  flex: 1;
+
+  border: none;
+
+  padding: 13px;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+/* SAVE BUTTON */
+.modal-actions button:first-child {
+  background: #2563eb;
+  color: white;
+}
+
+.modal-actions button:first-child:hover {
+  background: #1d4ed8;
+}
+
+/* CANCEL BUTTON */
+.modal-actions button:last-child {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.modal-actions button:last-child:hover {
+  background: #d1d5db;
+}
+
+/* ================= ANIMATION ================= */
+@keyframes modalPopup {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-content select {
+  width: 100%;
+
+  padding: 14px 16px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 12px;
+
+  font-size: 15px;
+
+  outline: none;
+
+  background: white;
+
+  transition: 0.2s;
+
+  box-sizing: border-box;
+}
+
+.modal-content select:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+}
+
+.logout-menu {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 15px;
+  
+  background: rgba(255,255,255,0.15);
+}
+
+.logout-menu:hover {
+  background: rgba(255, 80, 80, 0.25);
+}
+
+.attendance-record-status.new {
+  color: #dc2626;
+  font-weight: 600;
+  padding-bottom :15px;
+}
+
+.attendance-record-status.exists {
+  color: #0891b2;
+  font-weight: 600;
+  padding-bottom :15px;
+}
+
+/* ==============================
+   STAFF STATUS
+============================== */
+
+.staff-status {
+  font-weight: 700;
+}
+
+.staff-status.active {
+  color: #16a34a;
+}
+
+.staff-status.inactive {
+  color: #dc2626;
+}
+/* =========================
+   MOBILE FIX (IMPORTANT)
+========================= */
+@media (max-width: 768px) {
+
+  /* main full screen */
+	.sidebar {
+	  position: fixed;
+
+	  left: 10px;
+	  top: 10px;
+
+	  width: 220px;
+	  height: calc(100% - 20px);
+
+	  background: linear-gradient(
+		180deg,
+		#5b6cff,
+		#7b4dff
+	  );
+
+	  border-radius: 20px;
+
+	  padding: 15px 10px;
+
+	  transition:
+		width 0.3s ease;
+
+	  z-index: 2000;
+
+	  overflow: hidden;
+	}
+
+	.sidebar.collapsed {
+	  width: 50px;
+	}
+
+  #main {
+    margin-left: 190px;
+    padding: 15px;
+  }
+
+  #main.collapsed {
+    margin-left: 70px;
+  }
+
+  /* topbar stack */
+  .topbar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .top-left {
+    width: auto;
+  }
+
+  .top-actions {
+    flex: 1;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .top-actions input,
+  .top-actions .btn {
+    width: 100%;
+  }
+}
