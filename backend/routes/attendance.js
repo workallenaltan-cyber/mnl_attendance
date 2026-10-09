@@ -175,7 +175,7 @@ router.post("/check", verify, async (req, res) => {
 	  });
 	}
 	
-	const nearCompany = matchedCompany.company_name;
+	
 
     // =============================
     // ✅ 上班
