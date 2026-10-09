@@ -469,8 +469,8 @@ function loadTodayInRecord() {
 
       el.innerHTML = `
         <div style="margin-top:15px;">
-          <p><strong>📅 日期:</strong> ${data.adate ?? "-"}</p>
-          <p><strong>🕒 上班:</strong> ${data.check_in_time ?? "-"}</p>
+          <p><strong>📅 DATE:</strong> ${data.adate ?? "-"}</p>
+          <p><strong>🕒 IN:</strong> ${data.check_in_time ?? "-"}</p>
         </div>
       `;
     })
@@ -485,43 +485,55 @@ function loadTodayInRecord() {
 // ✅ 今日打卡信息（新增🔥）
 // =====================
 function loadTodayRecord() {
-
   const token = localStorage.getItem("token");
+  const el = document.getElementById("todayInfo");
+
+  if (!el) return;
+
+  if (!token) {
+    el.innerHTML = '<p style="color:red;">请重新登录</p>';
+    return;
+  }
+
+  el.innerHTML = "<p>正在加载考勤记录...</p>";
 
   fetch(API + "/api/my-today", {
     headers: {
       "Authorization": "Bearer " + token
     }
   })
-  .then(res => res.json())
-  .then(data => {
+    .then(async res => {
+      const data = await res.json();
 
-    const el = document.getElementById("todayInfo");
-    if (!el) return;
+      if (!res.ok) {
+        throw new Error(data.message || data.msg || "加载失败");
+      }
 
-    // ❌ 没打卡
-    if (data.status === "empty") {
-      el.innerHTML = `<p style="color:red;">今天还没打卡</p>`;
-      return;
-    }
+      return data;
+    })
+    .then(data => {
+      if (data.status !== "success") {
+        el.innerHTML = '<p style="color:red;">没有找到今日考勤记录</p>';
+        return;
+      }
 
-    // ❌ 错误
-    if (data.status !== "success") {
-      el.innerHTML = `<p style="color:red;">加载失败</p>`;
-      return;
-    }
-
-    // ✅ 正常显示
-    el.innerHTML = `
-      <div style="margin-top:15px;">
-        <p><strong>📅 日期:</strong> ${data.adate}</p>
-        <p><strong>🕒 上班:</strong> ${data.check_in_time}</p>
-		<p><strong>🕒 下班:</strong> ${data.check_out_time}</p>
-      </div>
-    `;
-  });
+      el.innerHTML = `
+        <div style="margin-top:15px;">
+          <p><strong>📅 DATE：</strong>${data.adate || "-"}</p>
+          <p><strong>🕒 IN：</strong>${data.check_in_time || "-"}</p>
+          ${
+            data.check_out_time
+              ? `<p><strong>🕒 OUT：</strong>${data.check_out_time}</p>`
+              : ""
+          }
+        </div>
+      `;
+    })
+    .catch(err => {
+      console.error("loadTodayRecord error:", err);
+      el.innerHTML = '<p style="color:red;">考勤记录加载失败</p>';
+    });
 }
-
 /*======================================Admin Control=====================================*/
 // =====================
 // ✅ Sidebar 切换
@@ -1026,6 +1038,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 加载今日上班日期与时间
 	if (document.getElementById("todayInInfo")) {
 	  loadTodayInRecord();
+	}
+	
+	// Done 页面：显示上班与下班记录
+	if (document.getElementById("todayInfo")) {
+	  loadTodayRecord();
 	}
 	
   // 只有管理员考勤列表页面才加载全部记录
