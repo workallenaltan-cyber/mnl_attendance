@@ -80,8 +80,8 @@ function buildAttendanceMessage({
 	`👤 Employee ID: ${escapeHtml(employeeId)}`,
 	`🧑 Employee Name: ${escapeHtml(employeeName || "Unknown")}`,
 	`🏢 Company: ${escapeHtml(companyName || "Unknown")}`,
-	`📅 Date: ${escapeHtml(telegramDate)}`,
-	`🕒 Time: ${escapeHtml(telegramTime)}`,
+    `📅 Date: ${escapeHtml(date || "-")}`,
+    `🕒 Time: ${escapeHtml(time || "-")}`
   ];
 
   // 显示可点击的 Google Maps 坐标链接
