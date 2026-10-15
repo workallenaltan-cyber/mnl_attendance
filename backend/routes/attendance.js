@@ -264,41 +264,67 @@ router.post("/check", verify, async (req, res) => {
     }
 	
 
-	  // 获取今天的考勤记录
-	  
-		const record = result.rows[0];
 
-		// 至少签到 30 分钟才能签出
-		const MIN_CHECKOUT_MINUTES = 30;
+        // 获取今天的考勤记录
+        const record = result.rows[0];
 
-		if (record && !record.check_out_time) {
-		  const checkInTime = new Date(record.check_in_time);
-		  const currentTime = new Date();
+        // 至少签到 30 分钟才能签出
+        const MIN_CHECKOUT_MINUTES = 30;
 
-		  const elapsedMinutes =
-			(currentTime.getTime() - checkInTime.getTime()) / 60000;
+        if (record && !record.check_out_time) {
+          // 读取数据库签到时间
+          const checkInTime = new Date(record.check_in_time);
+          const currentTime = Date.now();
 
-		  if (elapsedMinutes < MIN_CHECKOUT_MINUTES) {
-			const remainingMinutes = Math.ceil(
-			  MIN_CHECKOUT_MINUTES - elapsedMinutes
-			);
+          if (Number.isNaN(checkInTime.getTime())) {
+            console.error(
+              "Invalid check-in time:",
+              record.check_in_time
+            );
 
-			await sendTelegramNotification({
-			  type: "CHECK OUT",
-			  status: "FAILED",
-			  employeeId,
-			  companyName: nearCompany,
-			  ip,
-			  detail: `Checkout attempted too early. Please wait ${remainingMinutes} more minute(s).`
-			});
+            return res.status(500).json({
+              status: "error",
+              msg: "Invalid check-in time"
+            });
+          }
 
-			return res.status(400).json({
-			  status: "too_early",
-			  msg: `Checkout is only allowed 30 minutes after check-in. Please wait another ${remainingMinutes} minute(s).`,
-			  remaining_minutes: remainingMinutes
-			});
-		  }
-		}
+          const elapsedMinutes =
+            (currentTime - checkInTime.getTime()) / 60000;
+
+          if (elapsedMinutes < MIN_CHECKOUT_MINUTES) {
+            const remainingMinutes = Math.ceil(
+              MIN_CHECKOUT_MINUTES - elapsedMinutes
+            );
+
+            // Telegram 失败通知
+            await sendTelegramNotification(
+              buildAttendanceMessage({
+                type: "failed",
+                employeeId,
+                employeeName,
+                companyName: nearCompany,
+                date: now.toLocaleDateString("en-GB", {
+                  timeZone: "Asia/Kuala_Lumpur"
+                }),
+                time: now.toLocaleTimeString("en-GB", {
+                  timeZone: "Asia/Kuala_Lumpur",
+                  hour12: false
+                }),
+                lat,
+                lng,
+                reason:
+                  `Checkout attempted too early. Please wait ${remainingMinutes} more minute(s).`
+              })
+            );
+
+            return res.status(400).json({
+              status: "too_early",
+              msg: `Checkout is only allowed 30 minutes after check-in. Please wait another ${remainingMinutes} minute(s).`,
+              remaining_minutes: remainingMinutes
+            });
+          }
+        }
+
 
 
 
