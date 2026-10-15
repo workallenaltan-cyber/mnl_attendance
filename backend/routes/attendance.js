@@ -4,6 +4,13 @@ const pool = require("../db");
 const jwt = require("jsonwebtoken");
 const ExcelJS = require("exceljs");
 
+const {
+  sendTelegramNotification,
+  buildAttendanceMessage
+} = require("../telegram");
+
+
+
 // =============================
 // ✅ Token 验证（最终版🔥）
 // =============================
@@ -123,9 +130,29 @@ router.post("/check", verify, async (req, res) => {
       "";
 
     // ❌ GPS 检查
-    if (!lat || !lng || lat == 0 || lng == 0) {
-      return res.status(400).json({ msg: "GPS lost" });
-    }
+	if (
+	  lat === undefined ||
+	  lat === null ||
+	  lng === undefined ||
+	  lng === null ||
+	  lat === "" ||
+	  lng === "" ||
+	  !Number.isFinite(Number(lat)) ||
+	  !Number.isFinite(Number(lng)) ||
+	  Number(lat) === 0 ||
+	  Number(lng) === 0
+	) {
+	  await sendTelegramNotification({
+		type: "CHECK IN / OUT",
+		status: "FAILED",
+		employeeId,
+		companyName: "Unknown - GPS unavailable",
+		ip,
+		detail: "GPS lost or invalid coordinates"
+	  });
+
+	  return res.status(400).json({ msg: "GPS lost" });
+	}
 
     const now = getMalaysiaTime();
     const today = getToday();
@@ -165,17 +192,30 @@ router.post("/check", verify, async (req, res) => {
 		matchedCompany = c;
 	  }
 	}
-	const nearCompany = matchedCompany.company_name;
-	// =============================
-	// ❌ 不在任何分行范围
-	// =============================
+	
+	// 检查员工是否在任何分行的范围内
+
 	if (!matchedCompany) {
+	  const nearestCompanyName =
+		nearest?.company_name || "Unknown branch";
+
+	  await sendTelegramNotification({
+		type: "CHECK IN / OUT",
+		status: "FAILED",
+		employeeId,
+		companyName: nearestCompanyName,
+		ip,
+		detail: `Out of range. Nearest branch distance: ${Math.round(minDistance)}m`
+	  });
+
 	  return res.status(403).json({
-		msg: `❌ Out of Range，close to：${nearest.company_name} (${Math.round(minDistance)}m)`
+		msg: `❌ Out of Range，close to：${nearestCompanyName} (${Math.round(minDistance)}m)`
 	  });
 	}
-	
-	
+
+	const nearCompany = matchedCompany.company_name;
+
+
 
     // =============================
     // ✅ 上班
@@ -188,13 +228,67 @@ router.post("/check", verify, async (req, res) => {
         [employeeId, today, now, lat, lng, ip,nearCompany]
       );
 
-      return res.json({
-        status: "checkin",
-		msg: `Check in Successful @ ${matchedCompany.company_name}`
-      });
+		await sendTelegramNotification(
+		  buildAttendanceMessage({
+			type: "checkin",
+			employeeId,
+			companyName: nearCompany,
+			date: now.toLocaleDateString("en-GB", {
+			  timeZone: "Asia/Kuala_Lumpur"
+			}),
+			time: now.toLocaleTimeString("en-GB", {
+			  timeZone: "Asia/Kuala_Lumpur",
+			  hour12: false
+			}),
+			lat,
+			lng,
+			reason: "Check-in successful"
+		  })
+		);
+		return res.json({
+		  status: "checkin",
+		  msg: `Check in Successful @ ${matchedCompany.company_name}`
+		});
     }
+	
 
-    const record = result.rows[0];
+	  // 获取今天的考勤记录
+	  
+		const record = result.rows[0];
+
+		// 至少签到 30 分钟才能签出
+		const MIN_CHECKOUT_MINUTES = 30;
+
+		if (record && !record.check_out_time) {
+		  const checkInTime = new Date(record.check_in_time);
+		  const currentTime = new Date();
+
+		  const elapsedMinutes =
+			(currentTime.getTime() - checkInTime.getTime()) / 60000;
+
+		  if (elapsedMinutes < MIN_CHECKOUT_MINUTES) {
+			const remainingMinutes = Math.ceil(
+			  MIN_CHECKOUT_MINUTES - elapsedMinutes
+			);
+
+			await sendTelegramNotification({
+			  type: "CHECK OUT",
+			  status: "FAILED",
+			  employeeId,
+			  companyName: nearCompany,
+			  ip,
+			  detail: `Checkout attempted too early. Please wait ${remainingMinutes} more minute(s).`
+			});
+
+			return res.status(400).json({
+			  status: "too_early",
+			  msg: `Checkout is only allowed 30 minutes after check-in. Please wait another ${remainingMinutes} minute(s).`,
+			  remaining_minutes: remainingMinutes
+			});
+		  }
+		}
+
+
 
     // =============================
     // ✅ 下班
@@ -210,49 +304,129 @@ router.post("/check", verify, async (req, res) => {
         [now, lat, lng, ip, record.id]
       );
 
-      return res.json({
-        status: "checkout",
-        msg: `Checkout Successfull @ ${matchedCompany.company_name}`
-      });
+
+		await sendTelegramNotification(
+		  buildAttendanceMessage({
+			type: "checkout",
+			employeeId,
+			companyName: nearCompany,
+			date: now.toLocaleDateString("en-GB", {
+			  timeZone: "Asia/Kuala_Lumpur"
+			}),
+			time: now.toLocaleTimeString("en-GB", {
+			  timeZone: "Asia/Kuala_Lumpur",
+			  hour12: false
+			}),
+			lat,
+			lng,
+			reason: "Check-out successful"
+		  })
+		);
+		return res.json({
+		  status: "checkout",
+		  msg: `Checkout Successful @ ${matchedCompany.company_name}`
+		});
+
     }
 
-    return res.json({
-      status: "done",
-      msg: "Today already check.",
-	   
-    });
+		await sendTelegramNotification({
+		  type: "CHECK OUT",
+		  status: "FAILED",
+		  employeeId,
+		  companyName: nearCompany,
+		  ip,
+		  detail: "Attempted to check out again after already checking out"
+		});
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "server error 1" });
-  }
+		return res.json({
+		  status: "done",
+		  msg: "Today already check."
+		});
+
+		} catch (err) {
+		  console.error("Attendance check error:", err);
+
+		  await sendTelegramNotification({
+			type: "CHECK IN / OUT",
+			status: "FAILED",
+			employeeId: req.user?.id || "Unknown",
+			companyName: "Unknown",
+			ip:
+			  req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+			  req.socket.remoteAddress ||
+			  "-",
+			detail: `Server error: ${err.message}`
+		  });
+
+		  return res.status(500).json({ msg: "server error 1" });
+		}
 });
 
 
 // =============================
 // ✅ 所有记录
 // =============================
-router.get("/all", verify, verifyAdmin, async (req, res) => { 
+
+router.get("/all", verify, verifyAdmin, async (req, res) => {
   try {
+    let { month, search = "", page = "1", limit = "20" } = req.query;
 
-    let month = req.query.month; // ✅ 用 let
-
-    // ✅ 没传 → 默认上个月
+    // Default month: previous month
     if (!month) {
       const d = new Date();
       d.setMonth(d.getMonth() - 1);
 
-      const year = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-
-      month = `${year}-${m}`;
+      month = `${d.getFullYear()}-${String(
+        d.getMonth() + 1
+      ).padStart(2, "0")}`;
     }
 
-    let sql = `
-      SELECT 
+    page = Math.max(1, parseInt(page, 10) || 1);
+    limit = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+
+    const offset = (page - 1) * limit;
+    const params = [month];
+    let searchCondition = "";
+
+    if (search.trim()) {
+      params.push(`%${search.trim()}%`);
+      searchCondition = `
+        AND (
+          attendance.employee_id ILIKE $2
+          OR users.employee_name ILIKE $2
+          OR COALESCE(attendance.check_area, '') ILIKE $2
+        )
+      `;
+    }
+
+    const whereClause = `
+      WHERE TO_CHAR(attendance.date, 'YYYY-MM') = $1
+      ${searchCondition}
+    `;
+
+    // Count all matching records
+    const countResult = await pool.query(
+      `
+      SELECT COUNT(*)::int AS total
+      FROM attendance
+      INNER JOIN users
+        ON attendance.employee_id = users.employee_id
+      ${whereClause}
+      `,
+      params
+    );
+
+    const total = countResult.rows[0].total;
+    const totalPages = Math.ceil(total / limit);
+
+    const dataParams = [...params, limit, offset];
+
+    const result = await pool.query(
+      `
+      SELECT
         attendance.employee_id,
         users.employee_name,
-        attendance.check_area as company_name,
+        attendance.check_area AS company_name,
         TO_CHAR(attendance.date, 'DD/MM/YYYY') AS adate,
         TO_CHAR(attendance.check_in_time, 'HH24:MI:SS') AS check_in_time,
         TO_CHAR(attendance.check_out_time, 'HH24:MI:SS') AS check_out_time,
@@ -262,17 +436,27 @@ router.get("/all", verify, verifyAdmin, async (req, res) => {
         attendance.check_out_lng,
         attendance.check_in_ip,
         attendance.check_out_ip,
-		attendance.remark
+        attendance.remark
       FROM attendance
-      INNER JOIN users ON attendance.employee_id = users.employee_id
-      LEFT JOIN company ON users.company_code = company.company_code
-      WHERE TO_CHAR(attendance.date, 'YYYY-MM') = $1
-      ORDER BY attendance.date DESC
-    `;
+      INNER JOIN users
+        ON attendance.employee_id = users.employee_id
+      ${whereClause}
+      ORDER BY
+        attendance.date DESC,
+        attendance.check_in_time DESC
+      LIMIT $${dataParams.length - 1}
+      OFFSET $${dataParams.length}
+      `,
+      dataParams
+    );
 
-    const result = await pool.query(sql, [month]);
-
-    res.json(result.rows);
+    res.json({
+      data: result.rows,
+      total,
+      page,
+      limit,
+      totalPages
+    });
 
   } catch (err) {
     console.error("❌ /api/all error:", err);

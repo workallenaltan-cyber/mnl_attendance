@@ -331,6 +331,110 @@ function check() {
   });
 }
 
+
+async function checkCheckoutEligibility() {
+  const btn = document.getElementById("checkBtn");
+  if (!btn) return;
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    location.href = "index.html";
+    return;
+  }
+
+  // 默认先禁用，等待服务器确认
+  btn.disabled = true;
+  btn.innerText = "Checking...";
+
+  try {
+    const res = await fetch(API + "/api/my-today", {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
+
+    if (res.status === 401) {
+      localStorage.clear();
+      location.href = "index.html";
+      return;
+    }
+
+    if (!res.ok) {
+      btn.disabled = true;
+      btn.innerText = "Unable to Check";
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.status !== "success" || !data.check_in_time) {
+      btn.disabled = true;
+      btn.innerText = "No Check-in Record";
+      return;
+    }
+
+    // 已经 Checkout，不允许重复打卡
+    if (data.check_out_time) {
+      btn.disabled = true;
+      btn.innerText = "Already Checked Out";
+      return;
+    }
+
+    // API 日期格式：DD/MM/YYYY
+    // API 时间格式：HH:MM:SS
+    const [day, month, year] = data.adate.split("/").map(Number);
+    const [hour, minute, second] =
+      data.check_in_time.split(":").map(Number);
+
+    // 使用浏览器本地时间构造日期
+    const checkInDate = new Date(
+      year,
+      month - 1,
+      day,
+      hour,
+      minute,
+      second || 0
+    );
+
+    const now = new Date();
+    const unlockTime = checkInDate.getTime() + 30 * 60 * 1000;
+    const remainingMs = unlockTime - now.getTime();
+
+    if (remainingMs > 0) {
+      const remainingMinutes = Math.ceil(remainingMs / 60000);
+
+      btn.disabled = true;
+      btn.innerText = `WAIT ${remainingMinutes} MIN`;
+      return;
+    }
+
+    // 已满 30 分钟
+    btn.disabled = false;
+    btn.innerText = "CHECK OUT";
+
+  } catch (err) {
+    console.error("Checkout eligibility error:", err);
+    btn.disabled = true;
+    btn.innerText = "Check Failed";
+  }
+}
+
+
+let checkoutEligibilityTimer = null;
+
+function startCheckoutEligibilityCheck() {
+  checkCheckoutEligibility();
+
+  if (checkoutEligibilityTimer) {
+    clearInterval(checkoutEligibilityTimer);
+  }
+
+  checkoutEligibilityTimer = setInterval(() => {
+    checkCheckoutEligibility();
+  }, 15000);
+}
+
 function logout() {
 
   const confirmLogout = confirm("确定要退出登录吗？");
@@ -627,8 +731,10 @@ function initSidebarState() {
   const state =
     localStorage.getItem("sidebarState");
 
-  const collapsed =
-    state === "collapsed";
+	const collapsed =
+	  window.innerWidth > 768
+		? state !== "open"
+		: state === "collapsed";
 
   // Sidebar
   sidebar.classList.toggle(
@@ -848,91 +954,161 @@ function loadStaff() {
 }
 
 
-function loadAll() {
 
+let attendancePage = 1;
+let attendanceTotalPages = 0;
+const attendancePageSize = 5;
+let attendanceSearchTimer = null;
+
+function loadAll(page = attendancePage) {
   const token = localStorage.getItem("token");
-  if (!token) return;
+  const table = document.getElementById("tableBody");
 
-  // ✅ 获取月份（Flatpickr）
-  const month = document.getElementById("monthFilter")?.value;
+  if (!token || !table) return;
 
-  let url = API + "/api/all";
+  attendancePage = Math.max(1, page);
 
-  if (month) {
-    url += "?month=" + month;
+  const month = document.getElementById("monthFilter")?.value || "";
+  const search = document.getElementById("searchInput")?.value.trim() || "";
+
+  const params = new URLSearchParams({
+    page: String(attendancePage),
+    limit: String(attendancePageSize),
+    search
+  });
+
+  if (month) params.set("month", month);
+
+  table.innerHTML = `<tr><td colspan="11">LOADING...</td></tr>`;
+
+  fetch(`${API}/api/all?${params.toString()}`, {
+    headers: {
+      Authorization: "Bearer " + token
+    }
+  })
+    .then(async res => {
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        location.href = "index.html";
+        return null;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.msg || "Failed to load attendance");
+      }
+
+      return data;
+    })
+    .then(result => {
+      if (!result) return;
+
+      const rows = result.data || [];
+      attendanceTotalPages = result.totalPages || 0;
+
+      table.innerHTML = "";
+
+      rows.forEach(row => {
+        let status = "Normal";
+        let className = "status-ok";
+
+        if (row.check_in_time) {
+          const [hour, min] = row.check_in_time.split(":").map(Number);
+
+          if (hour * 60 + min > 8 * 60 + 30) {
+            status = "Late";
+            className = "status-late";
+          }
+        }
+
+        if (!row.check_out_time) {
+          status = "Working...";
+          className = "status-pending";
+        }
+
+        table.innerHTML += `
+          <tr>
+            <td>${row.employee_id ?? "-"}</td>
+            <td>${row.employee_name ?? "-"}</td>
+            <td>${row.company_name ?? "-"}</td>
+            <td>${row.adate ?? "-"}</td>
+            <td>${row.check_in_time ?? "-"}</td>
+            <td>${row.check_out_time || "-"}</td>
+            <td><span class="badge ${className}">${status}</span></td>
+          </tr>
+        `;
+      });
+
+      if (rows.length === 0) {
+        table.innerHTML = `<tr><td colspan="11">No Data</td></tr>`;
+      }
+
+      renderAttendancePagination(result.total || 0);
+    })
+    .catch(err => {
+      console.error("loadAll error:", err);
+      table.innerHTML = `<tr><td colspan="11">Load Failed</td></tr>`;
+
+      const pager = document.getElementById("pagination");
+      if (pager) pager.innerHTML = "";
+    });
+}
+
+function renderAttendancePagination(total) {
+  const pager = document.getElementById("pagination");
+  if (!pager) return;
+
+	const start = total === 0
+	  ? 0
+	  : (attendancePage - 1) * attendancePageSize + 1;
+
+	const end = Math.min(
+	  attendancePage * attendancePageSize,
+	  total
+	);
+
+  let html = `
+    <div>
+      Showing ${start}-${end} of ${total} records
+    </div>
+    <div class="page-buttons">
+      <button
+        onclick="loadAll(${attendancePage - 1})"
+        ${attendancePage <= 1 ? "disabled" : ""}
+      >Previous</button>
+  `;
+
+  const totalPages = attendanceTotalPages;
+  const first = Math.max(1, attendancePage - 2);
+  const last = Math.min(totalPages, attendancePage + 2);
+
+  for (let p = first; p <= last; p++) {
+    html += `
+      <button
+        class="${p === attendancePage ? "active" : ""}"
+        onclick="loadAll(${p})"
+      >${p}</button>
+    `;
   }
 
-  fetch(url, {
-    headers: {
-      "Authorization": "Bearer " + token
-    }
-  })
-  .then(res => {
+  html += `
+      <button
+        onclick="loadAll(${attendancePage + 1})"
+        ${attendancePage >= totalPages ? "disabled" : ""}
+      >Next</button>
+    </div>
+  `;
 
-    if (res.status === 401) {
-      localStorage.clear();
-      location.href = "index.html";
-      return;
-    }
+  pager.innerHTML = html;
+}
 
-    return res.json();
-  })
-  .then(data => {
+function filterTable() {
+  clearTimeout(attendanceSearchTimer);
 
-    const table = document.getElementById("tableBody");
-    if (!table) return;
-
-    table.innerHTML = "";
-
-    data.forEach(row => {
-
-      let status = "Normal";
-      let className = "status-ok";
-
-      // ✅ 判断迟到
-      if (row.check_in_time) {
-        const [hour, min] = row.check_in_time.split(":").map(Number);
-        const totalMin = hour * 60 + min;
-
-        if (totalMin > (8 * 60 + 30)) {
-          status = "Late";
-          className = "status-late";
-        }
-      }
-
-      // ✅ 未下班优先
-      if (!row.check_out_time) {
-        status = "Working...";
-        className = "status-pending";
-      }
-
-      table.innerHTML += `
-        <tr>
-          <td>${row.employee_id}</td>
-          <td>${row.employee_name}</td>
-          <td>${row.company_name}</td>
-          <td>${row.adate}</td>
-          <td>${row.check_in_time}</td>
-          <td>${row.check_out_time || "-"}</td>
-          <td>${row.check_in_lat}, ${row.check_in_lng}</td>
-          <td>${row.check_out_lat || "-"}, ${row.check_out_lng || "-"}</td>
-          <td>${row.check_in_ip}</td>
-          <td>${row.check_out_ip || "-"}</td>
-          <td><span class="badge ${className}">${status}</span></td>
-        </tr>
-      `;
-    });
-
-    if (data.length === 0) {
-      table.innerHTML = `<tr><td colspan="11">No Data</td></tr>`;
-    }
-
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("tableBody").innerHTML =
-      `<tr><td colspan="11">Load Failed</td></tr>`;
-  });
+  attendanceSearchTimer = setTimeout(() => {
+    loadAll(1);
+  }, 300);
 }
 
 /* =========================
@@ -1021,87 +1197,120 @@ function exportExcel() {
 }
 
 
+
 document.addEventListener("DOMContentLoaded", () => {
-	autoLogoutAfterWork();
+  autoLogoutAfterWork();
 
   if (path.includes("index.html")) return;
 
   loadUserInfo();
 
-  
   // 自动检查今日打卡状态
-	if (!isAdmin) {
-	  loadStatus();
-	}
-	
-	
-	// 加载今日上班日期与时间
-	if (document.getElementById("todayInInfo")) {
-	  loadTodayInRecord();
-	}
-	
-	// Done 页面：显示上班与下班记录
-	if (document.getElementById("todayInfo")) {
-	  loadTodayRecord();
-	}
-	
-  // 只有管理员考勤列表页面才加载全部记录
-	if (isAdmin && document.getElementById("tableBody")) {
-	  loadAll();
-	}
- 
+  if (!isAdmin) {
+    loadStatus();
+  }
 
-	if (isAdmin) {
-
-	  // =====================================================
-	  // ATTENDANCE ADMIN PAGE
-	  // =====================================================
-
-	  if (!path.includes("mgt_staff.html")) {
-
-		loadStaff();
-
-		const monthFilter =
-		  document.getElementById("monthFilter");
-
-		// 只有 Attendance 页面才使用 Flatpickr
-		if (
-		  monthFilter &&
-		  typeof flatpickr !== "undefined" &&
-		  typeof monthSelectPlugin !== "undefined"
-		) {
-
-		  flatpickr("#monthFilter", {
-			dateFormat: "Y-m",
-
-			plugins: [
-			  new monthSelectPlugin({
-				shorthand: true,
-				dateFormat: "Y-m",
-				altFormat: "F Y"
-			  })
-			],
-
-			defaultDate:
-			  new Date(
-				new Date().setMonth(
-				  new Date().getMonth() - 1
-				)
-			  ),
-
-			onChange: function() {
-			  loadAll();
-			}
-		  });
-
-		}
-
-	  }
-
+  // Checkout 页面：显示今日上班信息
+  if (document.getElementById("todayInInfo")) {
+    loadTodayInRecord();
+  }
+  
+	// 只有 CHECK OUT 页面才执行 30 分钟限制检查
+	if (
+	  document.getElementById("checkBtn") &&
+	  document.getElementById("todayInInfo")
+	) {
+	  startCheckoutEligibilityCheck();
 	}
 
- 
+  // Done 页面：显示上班与下班记录
+  if (document.getElementById("todayInfo")) {
+    loadTodayRecord();
+  }
+
+  // 管理员考勤列表
+  if (isAdmin && document.getElementById("tableBody")) {
+    loadAll();
+  }
+
+  if (isAdmin && !path.includes("mgt_staff.html")) {
+    loadStaff();
+
+    const monthFilter = document.getElementById("monthFilter");
+
+    // 月份选择器只初始化一次
+    if (
+      monthFilter &&
+      !monthFilter._flatpickr &&
+      typeof flatpickr !== "undefined" &&
+      typeof monthSelectPlugin !== "undefined"
+    ) {
+      flatpickr(monthFilter, {
+        dateFormat: "Y-m",
+        disableMobile: true,
+
+        plugins: [
+          new monthSelectPlugin({
+            shorthand: true,
+            dateFormat: "Y-m",
+            altFormat: "F Y"
+          })
+        ],
+
+        defaultDate: new Date(
+          new Date().setMonth(new Date().getMonth() - 1)
+        ),
+
+        onChange: function () {
+          loadAll(1);
+        }
+      });
+    }
+  }
 });
+
+
+
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById("sidebar_box");
+  const overlay = document.getElementById("mobileSidebarOverlay");
+  const btn = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !overlay || !btn) return;
+
+  if (sidebar.classList.contains("mobile-open")) {
+    closeMobileSidebar();
+    return;
+  }
+
+  sidebar.classList.add("mobile-open");
+  overlay.hidden = false;
+  btn.innerText = "✕";
+  btn.setAttribute("aria-expanded", "true");
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.getElementById("sidebar_box");
+  const overlay = document.getElementById("mobileSidebarOverlay");
+  const btn = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !overlay || !btn) return;
+
+  sidebar.classList.remove("mobile-open");
+  overlay.hidden = true;
+  btn.innerText = "☰";
+  btn.setAttribute("aria-expanded", "false");
+}
+
+// 手机点击菜单项目后自动收起
+document.addEventListener("click", function (event) {
+  if (window.innerWidth > 768) return;
+
+  if (event.target.closest("#sidebar_box .menu")) {
+    closeMobileSidebar();
+  }
+});
+
 
 // =====================
 // ✅ 用户操作监听（🔥放这里）

@@ -13,6 +13,23 @@
 
 <body onload="initPage()">
 <div class="layout">
+	
+	<button
+	  type="button"
+	  id="mobileMenuBtn"
+	  class="mobile-menu-btn"
+	  aria-label="Open menu"
+	  aria-expanded="false"
+	  onclick="toggleMobileSidebar()"
+	>☰</button>
+
+	<div
+	  id="mobileSidebarOverlay"
+	  class="mobile-sidebar-overlay"
+	  hidden
+	  onclick="closeMobileSidebar()"
+	></div>
+
 	<div class="sidebar" id="sidebar_box"></div>
 	 
 
@@ -40,7 +57,7 @@
 
 	  </div>
 	  <!-- 表格卡片 -->
-	  <div class="card">
+	  <div class="card attendance-table-card">
 		<table id="dataTable">
 		  <thead>
 			<tr>
@@ -50,10 +67,10 @@
 			  <th>DATE</th>
 			  <th>TIME_IN</th>
 			  <th>TIME_OUT</th>
-			  <th>LOCATION_IN</th>
+		<!--	  <th>LOCATION_IN</th>
 			  <th>LOCATION_OUT</th>
 			  <th>IP_IN</th>
-			  <th>IP_OUT</th>
+			  <th>IP_OUT</th>  --!>
 			  <th>STATUS</th>
 			</tr>
 		  </thead>
@@ -61,6 +78,7 @@
 			<tr><td colspan="11">LOADING...</td></tr>
 		  </tbody>
 		</table>
+		<div id="pagination" class="attendance-pagination"></div>
 	  </div>
 
 	</div>
@@ -226,26 +244,8 @@ function logout() {
   location.href = "index.html";
 }
 
-document.addEventListener("DOMContentLoaded", function () {
 
-  const fp = flatpickr("#monthFilter", {
-    dateFormat: "Y-m",
-    plugins: [
-      new monthSelectPlugin({
-        shorthand: true,
-        dateFormat: "Y-m",
-        altFormat: "F Y"
-      })
-    ],
-    defaultDate: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-    onChange: function () {
-      loadAll();
-    }
-  });
 
-  window.fp = fp;
-  
-});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>

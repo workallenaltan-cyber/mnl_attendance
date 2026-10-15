@@ -1,3 +1,3 @@
 const bcrypt = require('bcryptjs');
 
-bcrypt.hash("bs001", 10).then(console.log);
+bcrypt.hash("123", 10).then(console.log);

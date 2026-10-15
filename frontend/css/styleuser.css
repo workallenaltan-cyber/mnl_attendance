@@ -89,3 +89,26 @@ button:hover {
     display: none;
   }
 }
+
+
+/* =========================
+   CHECK OUT 按钮：禁用时保持原本颜色
+========================= */
+#checkBtn:disabled {
+  opacity: 1 !important;
+  filter: none !important;
+  background: #b6c3fc !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+/* 禁用时鼠标悬停也不改变颜色 */
+#checkBtn:disabled:hover,
+#checkBtn:disabled:active {
+  background: #b6c3fc !important;
+  color: white !important;
+  opacity: 1 !important;
+  filter: none !important;
+}

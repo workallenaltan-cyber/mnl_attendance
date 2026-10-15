@@ -11,7 +11,28 @@
 <body onload="initPage()">
 
 <!-- ================= Sidebar ================= -->
+
+<!-- Mobile menu button -->
+<button
+  type="button"
+  id="mobileMenuBtn"
+  class="mobile-menu-btn"
+  aria-label="Open menu"
+  aria-expanded="false"
+  onclick="toggleMobileSidebar()"
+>☰</button>
+
+<!-- Mobile overlay -->
+<div
+  id="mobileSidebarOverlay"
+  class="mobile-sidebar-overlay"
+  hidden
+  onclick="closeMobileSidebar()"
+></div>
+
+<!-- Sidebar -->
 <div class="sidebar" id="sidebar_box"></div>
+
 
 <!-- ================= Main ================= -->
 <div id="main" class="main">
