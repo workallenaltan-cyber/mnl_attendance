@@ -8,6 +8,29 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;");
 }
 
+// Always use Malaysia timezone, independent of Render server timezone.
+function getMalaysiaDateTime() {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kuala_Lumpur",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(new Date());
+
+  const values = Object.fromEntries(
+    parts.map(part => [part.type, part.value])
+  );
+
+  return {
+    date: `${values.day}/${values.month}/${values.year}`,
+    time: `${values.hour}:${values.minute}:${values.second}`
+  };
+}
+
 async function sendTelegramNotification(message) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -48,7 +71,6 @@ async function sendTelegramNotification(message) {
   }
 }
 
-
 function buildAttendanceMessage({
   type,
   employeeId,
@@ -67,27 +89,20 @@ function buildAttendanceMessage({
     failed: "🔴 ATTENDANCE FAILED"
   };
 
-	function formatTelegramDateTime(date, time) {
-	  return {
-		date: String(date || "-"),
-		time: String(time || "-")
-	  };
-	}
-
-	const telegramDate = String(date || "-");
-	const telegramTime = String(time || "-");
+  // Generate the Telegram display time in Malaysia timezone.
+  // Do not use the potentially misconverted date/time from attendance.js.
+  const malaysiaDateTime = getMalaysiaDateTime();
 
   const lines = [
     `<b>${titles[type] || "⚠️ ATTENDANCE NOTICE"}</b>`,
     "",
-	`👤 Employee ID: ${escapeHtml(employeeId)}`,
-	`🧑 Employee Name: ${escapeHtml(employeeName || "Unknown")}`,
-	`🏢 Company: ${escapeHtml(companyName || "Unknown")}`,
-	`📅 Date: ${escapeHtml(telegramDate)}`,
-	`🕒 Time: ${escapeHtml(telegramTime)}`,
+    `👤 Employee ID: ${escapeHtml(employeeId)}`,
+    `🧑 Employee Name: ${escapeHtml(employeeName || "Unknown")}`,
+    `🏢 Company: ${escapeHtml(companyName || "Unknown")}`,
+    `📅 Date: ${escapeHtml(malaysiaDateTime.date)}`,
+    `🕒 Time: ${escapeHtml(malaysiaDateTime.time)}`
   ];
 
-  // 显示可点击的 Google Maps 坐标链接
   const hasCoordinates =
     lat !== undefined &&
     lat !== null &&
