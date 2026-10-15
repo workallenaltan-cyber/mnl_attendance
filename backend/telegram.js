@@ -67,14 +67,21 @@ function buildAttendanceMessage({
     failed: "🔴 ATTENDANCE FAILED"
   };
 
+	function formatTelegramDateTime(date, time) {
+	  return {
+		date: String(date || "-"),
+		time: String(time || "-")
+	  };
+	}
+
   const lines = [
     `<b>${titles[type] || "⚠️ ATTENDANCE NOTICE"}</b>`,
     "",
 	`👤 Employee ID: ${escapeHtml(employeeId)}`,
 	`🧑 Employee Name: ${escapeHtml(employeeName || "Unknown")}`,
 	`🏢 Company: ${escapeHtml(companyName || "Unknown")}`,
-    `📅 Date: ${escapeHtml(date || "-")}`,
-    `🕒 Time: ${escapeHtml(time || "-")}`
+	`📅 Date: ${escapeHtml(telegramDate)}`,
+	`🕒 Time: ${escapeHtml(telegramTime)}`,
   ];
 
   // 显示可点击的 Google Maps 坐标链接
