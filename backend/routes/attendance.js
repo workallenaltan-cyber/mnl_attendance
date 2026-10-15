@@ -265,6 +265,7 @@ router.post("/check", verify, async (req, res) => {
 	
 
 
+       
         // 获取今天的考勤记录
         const record = result.rows[0];
 
@@ -272,25 +273,34 @@ router.post("/check", verify, async (req, res) => {
         const MIN_CHECKOUT_MINUTES = 30;
 
         if (record && !record.check_out_time) {
-          // 读取数据库签到时间
-          const checkInTime = new Date(record.check_in_time);
-          const currentTime = Date.now();
+          // 由 PostgreSQL 按马来西亚时间计算已签到分钟数
+          const elapsedResult = await pool.query(
+            `SELECT EXTRACT(
+               EPOCH FROM (
+                 (NOW() AT TIME ZONE 'Asia/Kuala_Lumpur')
+                 - $1::timestamp
+               )
+             ) / 60 AS elapsed_minutes`,
+            [record.check_in_time]
+          );
 
-          if (Number.isNaN(checkInTime.getTime())) {
+          const elapsedMinutes = Number(
+            elapsedResult.rows[0].elapsed_minutes
+          );
+
+          if (!Number.isFinite(elapsedMinutes) || elapsedMinutes < 0) {
             console.error(
-              "Invalid check-in time:",
-              record.check_in_time
+              "Invalid elapsed time:",
+              elapsedResult.rows[0].elapsed_minutes
             );
 
             return res.status(500).json({
               status: "error",
-              msg: "Invalid check-in time"
+              msg: "Unable to calculate check-in duration"
             });
           }
 
-          const elapsedMinutes =
-            (currentTime - checkInTime.getTime()) / 60000;
-
+          // 尚未满 30 分钟，禁止签出
           if (elapsedMinutes < MIN_CHECKOUT_MINUTES) {
             const remainingMinutes = Math.ceil(
               MIN_CHECKOUT_MINUTES - elapsedMinutes
@@ -324,6 +334,7 @@ router.post("/check", verify, async (req, res) => {
             });
           }
         }
+
 
 
 
