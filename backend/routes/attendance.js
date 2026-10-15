@@ -123,6 +123,17 @@ router.post("/check", verify, async (req, res) => {
     const employeeId = req.user.id;
     const { lat, lng } = req.body;
 
+	const employeeResult = await pool.query(
+	  `SELECT employee_name
+	   FROM users
+	   WHERE employee_id = $1
+	   LIMIT 1`,
+	  [employeeId]
+	);
+
+	const employeeName =
+	  employeeResult.rows[0]?.employee_name || "Unknown";
+
     // ✅ IP（适配 Render）
     const ip =
       req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
@@ -232,6 +243,7 @@ router.post("/check", verify, async (req, res) => {
 		  buildAttendanceMessage({
 			type: "checkin",
 			employeeId,
+			employeeName,
 			companyName: nearCompany,
 			date: now.toLocaleDateString("en-GB", {
 			  timeZone: "Asia/Kuala_Lumpur"
@@ -309,6 +321,7 @@ router.post("/check", verify, async (req, res) => {
 		  buildAttendanceMessage({
 			type: "checkout",
 			employeeId,
+			employeeName,
 			companyName: nearCompany,
 			date: now.toLocaleDateString("en-GB", {
 			  timeZone: "Asia/Kuala_Lumpur"
@@ -333,6 +346,7 @@ router.post("/check", verify, async (req, res) => {
 		  type: "CHECK OUT",
 		  status: "FAILED",
 		  employeeId,
+		  employeeName,
 		  companyName: nearCompany,
 		  ip,
 		  detail: "Attempted to check out again after already checking out"
@@ -350,6 +364,7 @@ router.post("/check", verify, async (req, res) => {
 			type: "CHECK IN / OUT",
 			status: "FAILED",
 			employeeId: req.user?.id || "Unknown",
+			employeeName,
 			companyName: "Unknown",
 			ip:
 			  req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||

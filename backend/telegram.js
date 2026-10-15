@@ -52,6 +52,7 @@ async function sendTelegramNotification(message) {
 function buildAttendanceMessage({
   type,
   employeeId,
+  employeeName,
   companyName,
   date,
   time,
@@ -69,8 +70,9 @@ function buildAttendanceMessage({
   const lines = [
     `<b>${titles[type] || "⚠️ ATTENDANCE NOTICE"}</b>`,
     "",
-    `👤 Employee ID: ${escapeHtml(employeeId)}`,
-    `🏢 Company: ${escapeHtml(companyName || "Unknown")}`,
+	`👤 Employee ID: ${escapeHtml(employeeId)}`,
+	`🧑 Employee Name: ${escapeHtml(employeeName || "Unknown")}`,
+	`🏢 Company: ${escapeHtml(companyName || "Unknown")}`,
     `📅 Date: ${escapeHtml(date || "-")}`,
     `🕒 Time: ${escapeHtml(time || "-")}`
   ];
